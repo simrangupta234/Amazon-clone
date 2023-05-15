@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "clone-e2310",
+    "amazon-clone": "clone-e2310"
+  },
+  "targets": {},
+  "etags": {}
+}
