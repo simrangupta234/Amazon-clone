@@ -3,7 +3,8 @@ import "./Payment.css";
 import { useStateValue } from "./StateProvider";
 import CheckoutProduct from "./CheckoutProduct";
 import { Link, useNavigate } from "react-router-dom";
-import { useElements, useStripe, CardElement } from "@stripe/react-stripe-js";
+import { useElements, CardElement } from "@stripe/react-stripe-js";
+import {loadStripe} from '@stripe/stripe-js';
 import CurrencyFormat from "react-currency-format";
 import { getBasketTotal } from "./reducer";
 import { useEffect } from "react";
@@ -14,7 +15,7 @@ function Payment() {
   const [{ basket, user }, dispatch] = useStateValue();
 
   const navigate = useNavigate();
-  const stripe = useStripe();
+  const stripe = loadStripe('secret_key');
   const elements = useElements();
 
   const [succeeded, setSucceeded] = useState(false);
@@ -47,23 +48,23 @@ function Payment() {
     event.preventDefault();
     setProcessing(true);
 
-    const payload = await stripe
+     stripe
       .confirmCardPayment(clientSecret, {
         payment_method: {
           card: elements.getElement(CardElement),
         },
       })
-      .then(({ paymentIntent }) => {
+      .then(function(result) {
         //paymentIntent = payment confirmation
-        console.log(paymentIntent);
+        console.log(result.paymentIntent);
         db.collection("users")
           .doc(user?.uid)
           .collection("orders")
-          .doc(paymentIntent.id)
+          .doc(result.paymentIntent.id)
           .set({
             basket: basket,
-            amount: paymentIntent.amount,
-            created: paymentIntent.created,
+            amount: result.paymentIntent.amount,
+            created: result.paymentIntent.created,
           });
 
         setSucceeded(true);
@@ -108,8 +109,9 @@ function Payment() {
               <h3>Review items and delivery</h3>
             </div>
             <div className="payment__items">
-              {basket.map((item) => (
+              {basket.map((item, key) => (
                 <CheckoutProduct
+                  key={key}
                   id={item.id}
                   title={item.title}
                   image={item.image}
