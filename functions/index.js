@@ -1,34 +1,16 @@
 const functions = require("firebase-functions");
-
-// // Create and deploy your first functions
-// // https://firebase.google.com/docs/functions/get-started
-//
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
-
 const express = require("express");
 const cors = require("cors");
-
 const stripe = require("stripe")(
   "sk_test_51N5KscSBXO05ZdayrfirWJPXSU2vpa7h3LH6dP9mEBW3VgJbNzpIneVrn7GbzPLZRNY8oy42DbeuaUHGrKjOJxtn00BukuwSC7"
 );
-
-// const [clientSecret, setClientSecret] = useState(true);
-// //const stringClientSecret = clientSecret.toString();
-// //API
-
 //App config
 const app = express();
-
 //Middlewares
 app.use(cors({ origin: true }));
 app.use(express.json());
-
 //API routes
 app.get("/", (request, response) => response.status(200).send("hello world"));
-
 app.post(`/payments/create`, async (request, response) => {
   const total = request.query.total;
 
@@ -38,14 +20,11 @@ app.post(`/payments/create`, async (request, response) => {
     amount: total, //subunits of currency
     currency: "usd",
   });
-
   // ok - created
   response.status(201).send({
     clientSecret: paymentIntent.client_secret,
   });
 });
-
 exports.api = functions.https.onRequest(app);
-
 //Example endpoint
 //http://127.0.0.1:5001/clone-e2310/us-central1/api
